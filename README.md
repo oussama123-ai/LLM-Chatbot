@@ -1,4 +1,4 @@
-# 💬🚀 LLM as a Chatbot Service
+# 💬🚀 LLM-Chatbot Service
 
 The purpose of this repository is to let people to use lots of open sourced instruction-following fine-tuned LLM models as a Chatbot service. Because different models behave differently, and different models require differently formmated prompts, I made a very simple library for model agnostic conversation and context managements. 
 
@@ -21,7 +21,7 @@ This project has become the one of the default framework at [jarvislabs.ai](http
 [`dstack`](https://dstack.ai) is an open-source tool that allows to run LLM-based apps in a a cloud of your choice via single command. `dstack` supports AWS, GCP, Azure, Lambda Cloud, etc.
 
 Use the `gradio.dstack.yml` and `discord.dstack.yml` configurations to run the Gradio app and Discord bot via `dstack`.
-- for more details on how to run this repo with `dstack`, read the [official documentation](https://dstack.ai/examples/llmchat) by `dstack`.
+- for more details on how to run this repo with `dstack`, read the [official documentation](https://dstack.ai/) by `dstack`.
 
 ## Instructions
 
@@ -47,7 +47,7 @@ Use the `gradio.dstack.yml` and `discord.dstack.yml` configurations to run the G
 
 1. Install dependencies. 
     ```console
-    $ cd LLM-As-Chatbot
+    $ cd LLM-Chatbot
     $ pip install -r requirements.txt
     ```
 
@@ -82,7 +82,7 @@ Use the `gradio.dstack.yml` and `discord.dstack.yml` configurations to run the G
 
 1. Install dependencies. 
     ```console
-    $ cd LLM-As-Chatbot
+    $ cd LLM-Chatbot
     $ pip install -r requirements.txt
     ```
 
@@ -108,12 +108,14 @@ Use the `gradio.dstack.yml` and `discord.dstack.yml` configurations to run the G
                             --local_files_only \
                             --serper-api-key "YOUR SERPER API KEY"
     ```
+### Notebook colab 
+ you can try LLM-Bot in colab using this Notebook : 
+ 
+- [Notebook-LLM-Chat](https://github.com/oussama123-ai/LLM-Chatbot/tree/main/notebooks)
 
 ### Context management
 
 Different model might have different strategies to manage context, so if you want to know the exact strategies applied to each model, take a look at the [`chats`](https://github.com/oussama123-ai/LLM-Chatbot/tree/main/chats) directory. However, here are the basic ideas that I have come up with initially. I have found long prompts will slow down the generation process a lot eventually, so I thought the prompts should be kept as short as possible while as concise as possible at the same time. In the previous version, I have accumulated all the past conversations, and that didn't go well.
-
-- In every turn of the conversation, the past `N` conversations will be kept. Think about the `N` as a hyper-parameter. As an experiment, currently the past 2-3 conversations are only kept for all models.
 
 ### Currently supported models
 
