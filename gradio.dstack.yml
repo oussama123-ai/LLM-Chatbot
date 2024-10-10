@@ -4,7 +4,7 @@ env:
   # (Optional) Specify your Hugging Face token
   - HUGGING_FACE_HUB_TOKEN= ""
   # (Optional) Specify your Serper API Key
-  - LLMCHAT_SERPER_API_KEY= "04a60726ca615ded79aa0323fbbfa06b86af92bc"
+  - LLMCHAT_SERPER_API_KEY= ""
 
 ports:
   - 6006
