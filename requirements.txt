@@ -1,0 +1,16 @@
+torch
+bitsandbytes
+datasets
+loralib
+sentencepiece
+bingbong
+tokenizers>=0.14.0
+einops
+scipy
+protobuf==3.20.*
+tiktoken
+discord
+urlextract
+auto-gptq
+sseclient-py
+text-generation

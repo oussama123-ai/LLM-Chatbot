@@ -1,0 +1,133 @@
+name: Build PR documentation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "optimum/**.py"
+      - "docs/**.mdx"
+      - "docs/**.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build_documentation:
+    runs-on: ubuntu-latest
+    env:
+      COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_NUMBER: ${{ github.event.number }}
+      EVENT_CONTEXT: ${{ toJSON(github.event) }}
+      PR_CLONE_URL: ${{ github.event.pull_request.head.repo.clone_url }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/doc-builder'
+          path: doc-builder
+
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/optimum'
+          path: optimum
+
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/optimum-habana'
+          path: optimum-habana
+
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/optimum-intel'
+          path: optimum-intel
+
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/optimum-furiosa'
+          path: optimum-furiosa
+
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/optimum-amd'
+          path: optimum-amd
+
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/optimum-tpu'
+          path: optimum-tpu
+
+      - name: Setup environment
+        run: |
+          pip uninstall -y doc-builder
+          cd doc-builder
+          git pull origin main
+          pip install .
+          pip install black
+          cd ..
+
+      - name: Make Habana documentation
+        run: |
+          sudo docker system prune -a -f
+          cd optimum-habana
+          make doc BUILD_DIR=habana-doc-build VERSION=pr_$PR_NUMBER
+          sudo mv habana-doc-build ../optimum
+          cd ..
+
+      - name: Make Intel documentation
+        run: |
+          sudo docker system prune -a -f
+          cd optimum-intel
+          make doc BUILD_DIR=intel-doc-build VERSION=pr_$PR_NUMBER
+          sudo mv intel-doc-build ../optimum
+          cd ..
+
+      # TODO: enable Furiosa doc build in PRs once archive.furiosa.ai is public
+      - name: Make Furiosa documentation
+        run: |
+          echo "For PRs we don't build Furiosa doc"
+
+      - name: Make AMD documentation
+        run: |
+          sudo docker system prune -a -f
+          cd optimum-amd
+          make doc BUILD_DIR=amd-doc-build VERSION=pr_$PR_NUMBER
+          sudo mv amd-doc-build ../optimum
+          cd ..
+
+      - name: Make TPU documentation
+        run: |
+          sudo docker system prune -a -f
+          cd optimum-tpu
+          pip install -U pip
+          pip install . -f https://storage.googleapis.com/libtpu-releases/index.html
+          doc-builder build optimum.tpu docs/source/ --build_dir tpu-doc-build --version pr_$PR_NUMBER --version_tag_suffix "" --html --clean
+          mv tpu-doc-build ../optimum
+          cd ..
+
+      - name: Make Optimum documentation
+        run: |
+          sudo docker system prune -a -f
+          cd optimum
+          make doc BUILD_DIR=optimum-doc-build VERSION=pr_$PR_NUMBER COMMIT_SHA_OPTIMUM=$COMMIT_SHA CLONE_URL=$PR_CLONE_URL
+          cd ..
+
+      - name: Combine subpackage documentation
+        run: |
+          cd optimum
+          sudo python docs/combine_docs.py --subpackages nvidia amd intel neuron tpu habana furiosa --version pr_$PR_NUMBER
+          sudo mv optimum-doc-build ../
+          cd ..
+
+      - name: Save commit_sha & pr_number
+        run: |
+          sudo chmod -R ugo+rwx optimum-doc-build
+          cd optimum-doc-build
+          echo ${{ env.COMMIT_SHA }} > ./commit_sha
+          echo ${{ env.PR_NUMBER }} > ./pr_number
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: doc-build-artifact
+          path: optimum-doc-build/
